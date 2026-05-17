@@ -43,8 +43,6 @@ class DataPreprocessor:
         return self.df
     
     def clip_outliers_iqr(self, columns, threshold=3):
-
-        
         for col in columns:
             Q1 = self.df[col].quantile(0.25)
             Q3 = self.df[col].quantile(0.75)
@@ -54,7 +52,6 @@ class DataPreprocessor:
             upper_bound = Q3 + threshold * IQR
             
             self.df[col] = self.df[col].clip(lower=lower_bound, upper=upper_bound)
-        
         return self.df
 
 def preprocess_data(df) -> pd.DataFrame:

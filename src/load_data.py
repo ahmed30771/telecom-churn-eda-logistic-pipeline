@@ -1,27 +1,56 @@
 import pandas as pd
 import os
+import yaml
 
 
-def loaddata(path="data/telco_customer_churn.csv"):
+def loadconfig(path="config/config.yaml") -> dict:
     """
-    Load data from csv file
+    Load configuration from YAML file.
 
     Args
     -------
-    path: str
-        csv dataset file path
-        Defaults to "data/raw/telco_customer_churn.csv"
+    config_path: str.
+        Path to the configuration.<br>
+        Defaults to "config/config.yaml"
+
+    Returns
+    -------
+    dict
+        Dictionary with configuration settings
+    """
+    file_path = os.path.abspath(path)
+    
+    if os.path.exists(file_path):
+        with open(file_path, "r") as f:
+            config = yaml.safe_load(f)
+    else:
+        raise FileNotFoundError("Configuration file is missing.")
+
+    return config
+
+
+def loaddata() -> pd.DataFrame:
+    """
+    Load data from csv file. File path from configuration.
 
     Returns
     -------
     DataFrame: DataFrame of csv file
     """
-    file_path = os.path.abspath(path)
-    if os.path.exists(file_path):
-        df = pd.read_csv(file_path, index_col="customerID")
-    else:
-        raise FileNotFoundError(f"File not found at this path: {file_path}")
+    config = loadconfig()
+    try:
+        path = os.path.abspath(config["data"]["data_path"])
+        indx_col = config["data"]["index_column"]
+    except:
+        raise ValueError("Invalid data configurations.")
 
+    if not os.path.basename(path).endswith(".csv"):
+        raise ValueError(
+            f"Invalid file extension. Only .csv files are supported.")
+    if os.path.exists(path):
+        df = pd.read_csv(path, index_col=indx_col)
+    else:
+        raise FileNotFoundError("Data file is not found on its path.")
     return df
 
 

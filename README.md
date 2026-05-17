@@ -127,6 +127,8 @@ Best trained model is saved using Pickle:
 
 ## Project Structure
 ```markdown
+- config/
+    - config.yaml
 - data/
     - telco_customer_churn.csv
 - model/
@@ -134,12 +136,14 @@ Best trained model is saved using Pickle:
 - notebook/
     - EDA.ipynb
     - EDA.md
-    - images/
+    - images/...
+- reports/
+    - cv_report.csv
 - src/
     - load_data.py
     - preprocessing.py
     - model_pipe.py
-- cv_report.csv
+- .gitignore
 - main.py
 - README.md
 - requirements.txt

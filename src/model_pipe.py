@@ -7,6 +7,12 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.pipeline import Pipeline
 import pickle
 import pandas as pd
+import os
+try:
+    from load_data import loadconfig
+except:
+    from src.load_data import loadconfig
+
 
 
 class LogisticRegressionPipeline:
@@ -19,64 +25,96 @@ class LogisticRegressionPipeline:
         df: pd.DataFrame
             pd.DataFrame for the Pipeline
         """
+        self.config = loadconfig()
         self.df = df
         self.pipeline = None
         self.grid_search = None
         self.label_encoder = LabelEncoder()
 
+    def encode_target(self):
+        # extracting required cofigurations
+        try:
+            target_col = self.config["target"]["column"]
+        except:
+            raise ValueError("Invalid target column configuration.")
 
-    def encode_target(self, target_col="Churn"):
+        if not target_col in self.df.columns:
+            raise ValueError("Invalid target column in configuration.")
+
         self.df[target_col] = self.label_encoder.fit_transform(
-            self.df[target_col]
-        )
+            self.df[target_col])
 
+    def split_data(self):
+        # extracting required cofigurations
+        try:
+            target_col = self.config["target"]["column"]
+            test_size = self.config["split"]["test_size"]
+            random_state = self.config["split"]["random_state"]
+            stratify = self.config["split"]["stratify_target"]
+        except:
+            raise ValueError("Invalid split data configuration.")
 
-    def split_data(self, target_col="Churn"):
+        if not target_col in self.df.columns:
+            raise ValueError("Invalid target column in configuration.")
+
         # features
         X = self.df.drop(columns=[target_col])
         # target
         y = self.df[target_col]
+        if stratify:
+            stratify = y
+        else:
+            stratify = None
 
         # train test split
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             X,
             y,
-            test_size=0.2,
-            stratify=y,
-            random_state=42,
+            test_size=test_size,
+            random_state=random_state,
+            stratify=stratify
         )
         return self.X_train, self.X_test, self.y_train, self.y_test
 
+    def create_column_transformer(self):
+        # extracting required cofigurations
+        try:
+            numeric = self.config["column_transformer"]["numeric"]
+            nominal = self.config["column_transformer"]["nominal"]
+            ordinal = self.config["column_transformer"]["ordinal"]
+            numeric_features = numeric["features"]
+            nominal_features = nominal["features"]
+            ordinal_dict = ordinal["features"]
+        except:
+            raise ValueError("Invalid column transformer configurations.")
 
-    def create_column_transformer(
-        self,
-        numeric_features,
-        nominal_features,
-        ordinal_features,
-        ordinal_categories
-        ):
         # Remaining Columns
-        used_columns = numeric_features + nominal_features + ordinal_features
-        remaining_columns = [col for col in self.X_train.columns if col not in used_columns]
-        
+        used_columns = numeric_features + \
+            nominal_features + list(ordinal_dict.keys())
+        remaining_columns = [
+            col for col in self.X_train.columns if col not in used_columns]
+
         # Numeric Pipeline
         numeric_pipeline = Pipeline([
-            ("imputer", SimpleImputer(strategy="median")),
+            ("imputer", SimpleImputer(
+                strategy=numeric["SimpleImputer"]["strategy"])),
             ("scaler", StandardScaler())
         ])
-        
+
         # Nominal Pipeline
         nominal_pipeline = Pipeline([
             ("imputer", SimpleImputer(strategy="most_frequent")),
-            ("onehot", OneHotEncoder(handle_unknown="ignore", drop="first"))
+            ("onehot", OneHotEncoder(
+                handle_unknown=nominal["OneHotEncoder"]["handle_unknown"], drop=nominal["OneHotEncoder"]["drop"]))
         ])
 
         # Ordinal Pipeline
         ordinal_pipeline = Pipeline([
-            ("imputer", SimpleImputer(strategy="most_frequent")),
-            ("ordinal", OrdinalEncoder(categories=ordinal_categories))
+            ("imputer", SimpleImputer(
+                strategy=ordinal["SimpleImputer"]["strategy"])),
+            ("ordinal", OrdinalEncoder(categories=list(ordinal_dict.values())))
         ])
-        
+
         # Remaining Columns Pipeline
         remaining_pipeline = Pipeline([
             ("imputer", SimpleImputer(strategy="most_frequent"))
@@ -86,74 +124,96 @@ class LogisticRegressionPipeline:
         self.column_transformer = ColumnTransformer([
             ("num", numeric_pipeline, numeric_features),
             ("nominal", nominal_pipeline, nominal_features),
-            ("ordinal", ordinal_pipeline, ordinal_features),
+            ("ordinal", ordinal_pipeline, list(ordinal_dict.keys())),
             ("remaining", remaining_pipeline, remaining_columns)
         ])
 
-
     def create_pipeline(self):
+        # extracting required cofigurations
+        try:
+            rand_state = self.config["model"]["logistic_regression"]["random_state"]
+        except:
+            raise ValueError("Invalid Logistic Regression Configuration.")
+
         self.logPipeline = Pipeline([
             ("preprocessor", self.column_transformer),
-            ("model", LogisticRegression())
+            ("model", LogisticRegression(random_state=rand_state))
         ])
-
-
+    
 
     def apply_gridsearch(self):
-        param_grid = {
-            "model__C": [0.01, 0.1, 1, 10],
-            "model__solver": ["lbfgs", "liblinear"],
-            "model__max_iter": [100, 200, 500, 5000]
-        }
+        # extracting required cofigurations
+        try:
+            cv = self.config["grid_search"]["cv"]
+            scoring = self.config["grid_search"]["scoring"]
+            n_jobs = self.config["grid_search"]["n_jobs"]
+            verbose = self.config["grid_search"]["verbose"]
+            param_grid = self.config["grid_search"]["param_grid"]
+        except:
+            raise ValueError('Invalid grid search configurations.')
 
         self.grid_search = GridSearchCV(
             estimator=self.logPipeline,
             param_grid=param_grid,
-            cv=5,
-            scoring="accuracy",
-            n_jobs=-1
+            cv=cv,
+            scoring=scoring,
+            verbose=verbose,
+            n_jobs=n_jobs
         )
-
 
     def train_model(self):
         self.grid_search.fit(self.X_train, self.y_train)
 
-
     def evaluate_model(self):
-        
+
         print("\nBest Parameters:")
         print(self.grid_search.best_params_)
-        
+
         print("\nBest CV Score:")
         print(self.grid_search.best_score_)
-        
+
         test_score = self.grid_search.score(self.X_test, self.y_test)
-        
+
         print("\nTest Accuracy:")
         print(test_score)
 
+    def save_model(self):
+        # extracting required cofigurations
+        try:
+            path = os.path.abspath(self.config["model"]["logistic_regression"]["save_path"])
+        except:
+            raise ValueError("Invalid Logistic Regression path Configuration.")
 
-    def save_model(self, filepath="model/churn_model.pkl"):
         # Best trained model save
-        with open(filepath, "wb") as f:
+        with open(path, "wb") as f:
             pickle.dump(self.grid_search.best_estimator_, f)
-        print(f"Model saved at: {filepath}")
+        print(f"Model saved at: {path}")
 
-
-    def load_model(self, filepath="model/churn_model.pkl"):
-        with open(filepath, "rb") as f:
+    def load_model(self):
+        # extracting required cofigurations
+        try:
+            path = os.path.abspath(self.config["model"]["logistic_regression"]["save_path"])
+        except:
+            raise ValueError("Invalid Logistic Regression path Configuration.")
+        
+        # Load model
+        with open(path, "rb") as f:
             self.loaded_model = pickle.load(f)
         print("Model loaded successfully")
-
 
     def predict(self, X_new):
         return self.loaded_model.predict(X_new)
 
+    def save_cv_report(self):
+        # extracting required cofigurations
+        try:
+            path = os.path.abspath(self.config["report"]["cv_report_path"])
+        except:
+            raise ValueError("Invalid CV Report Path Configuration.")
 
-    def save_cv_report(self, filepath="cv_report.csv"):
         # Cross-validation results
         results = pd.DataFrame(self.grid_search.cv_results_)
-        
+
         # Important columns select
         report = results[[
             "params",
@@ -161,47 +221,38 @@ class LogisticRegressionPipeline:
             "std_test_score",
             "rank_test_score"
         ]].copy()
-        
+
         # Sorting best to worst
         report = report.sort_values(by="rank_test_score")
 
         # Save to CSV
-        report.to_csv(filepath, index=False)
-        print(f"CV report saved at: {filepath}")
+        report.to_csv(path, index=False)
+        print(f"\nCV report saved at: {path}")
 
-
-    def run_pipeline(self, target_column:str, numeric_features:list, nominal_features:list, ordinal_dict:dict):
+    def run_pipeline(self):
         # 1. encode target
-        self.encode_target(target_column)
-        
+        self.encode_target()
+
         # 2. split
         self.split_data()
-        
+
         # 3. preprocess
-        self.create_column_transformer(
-            numeric_features=numeric_features,
-            nominal_features=nominal_features,
-            ordinal_features=list(ordinal_dict.keys()),
-            ordinal_categories=list(ordinal_dict.values())
-        )
-        
+        self.create_column_transformer()
+
         # 4. model pipeline
         self.create_pipeline()
-        
+
         # 5. grid
         self.apply_gridsearch()
-        
+
         # 6. train
         self.train_model()
-        
+
         # 7. evaluate
         self.evaluate_model()
 
         # 8. Cross-validation Report
         self.save_cv_report()
-
-
-
 
 
 if __name__ == "__main__":
@@ -210,21 +261,5 @@ if __name__ == "__main__":
     df = loaddata()
     df = preprocess_data(df)
     ml = LogisticRegressionPipeline(df)
-    ml.run_pipeline(
-        target_column="Churn",
-        numeric_features=['tenure', 'TotalCharges', 'MonthlyCharges'],
-        nominal_features=[
-            'MultipleLines', 'InternetService',
-            'OnlineSecurity', 'OnlineBackup',
-            'DeviceProtection', 'TechSupport',
-            'StreamingTV', 'StreamingMovies',
-            'PaymentMethod'],
-        ordinal_dict={
-            'Contract': ['Month-to-month', 'One year', 'Two year'],
-            'gender': ['Female', 'Male'],
-            'Partner': ['No', 'Yes'],
-            'Dependents': ['No', 'Yes'],
-            'PhoneService': ['No', 'Yes'],
-            'PaperlessBilling': ['No', 'Yes']}
-        )
-    ml.save_model(filepath="model/churn_model.pkl")
+    ml.run_pipeline()
+    ml.save_model()
