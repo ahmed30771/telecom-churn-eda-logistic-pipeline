@@ -1,13 +1,13 @@
 # **Telcom Customer Churn Exploratory Data Analysis**
 ---
 ## **Sample Data:**
-| customerID   | gender   |   SeniorCitizen | Partner   | Dependents   |   tenure | PhoneService   | MultipleLines   | InternetService   | OnlineSecurity   | OnlineBackup   | DeviceProtection   | TechSupport   | StreamingTV   | StreamingMovies   | Contract       | PaperlessBilling   | PaymentMethod             |   MonthlyCharges |   TotalCharges | Churn   |
-|:-------------|:---------|----------------:|:----------|:-------------|---------:|:---------------|:----------------|:------------------|:-----------------|:---------------|:-------------------|:--------------|:--------------|:------------------|:---------------|:-------------------|:--------------------------|-----------------:|---------------:|:--------|
-| 4086-ATNFV   | Female   |               0 | Yes       | Yes          |       34 | Yes            | No              | DSL               | Yes              | Yes            | Yes                | No            | No            | No                | One year       | Yes                | Mailed check              |            60.8  |        2042.05 | No      |
-| 4248-QPAVC   | Female   |               1 | Yes       | No           |       17 | Yes            | Yes             | Fiber optic       | Yes              | No             | Yes                | No            | No            | No                | Month-to-month | Yes                | Bank transfer (automatic) |            85.35 |        1463.45 | Yes     |
-| 3179-GBRWV   | Male     |               1 | Yes       | No           |       21 | Yes            | No              | DSL               | Yes              | Yes            | No                 | No            | No            | Yes               | Month-to-month | Yes                | Bank transfer (automatic) |            64.95 |        1339.8  | No      |
-| 3370-GQEAL   | Male     |               0 | Yes       | Yes          |       30 | Yes            | Yes             | Fiber optic       | No               | No             | No                 | No            | Yes           | No                | Month-to-month | No                 | Electronic check          |            85.45 |        2509.95 | No      |
-| 6865-JZNKO   | Female   |               0 | No        | No           |       30 | Yes            | No              | DSL               | Yes              | Yes            | No                 | No            | No            | No                | Month-to-month | Yes                | Bank transfer (automatic) |            55.3  |        1530.6  | No      |
+| customerID   | gender   |   SeniorCitizen | Partner   | Dependents   |   tenure | PhoneService   | MultipleLines    | InternetService   | OnlineSecurity      | OnlineBackup        | DeviceProtection    | TechSupport         | StreamingTV         | StreamingMovies     | Contract       | PaperlessBilling   | PaymentMethod             |   MonthlyCharges |   TotalCharges | Churn   |
+|:-------------|:---------|----------------:|:----------|:-------------|---------:|:---------------|:-----------------|:------------------|:--------------------|:--------------------|:--------------------|:--------------------|:--------------------|:--------------------|:---------------|:-------------------|:--------------------------|-----------------:|---------------:|:--------|
+| 3274-NSDWE   | Female   |               0 | No        | No           |       68 | Yes            | No               | No                | No internet service | No internet service | No internet service | No internet service | No internet service | No internet service | Two year       | No                 | Credit card (automatic)   |            19.6  |        1441.65 | No      |
+| 1571-SAVHK   | Male     |               0 | No        | No           |       12 | Yes            | Yes              | Fiber optic       | No                  | No                  | No                  | Yes                 | Yes                 | Yes                 | Month-to-month | Yes                | Mailed check              |            99.95 |        1132.75 | Yes     |
+| 4727-MCYZG   | Male     |               0 | No        | No           |        1 | Yes            | No               | DSL               | No                  | No                  | No                  | No                  | No                  | Yes                 | Month-to-month | No                 | Mailed check              |            55.55 |          55.55 | No      |
+| 9819-FBNSV   | Male     |               1 | Yes       | No           |       37 | Yes            | No               | Fiber optic       | No                  | No                  | No                  | No                  | No                  | No                  | Month-to-month | Yes                | Bank transfer (automatic) |            72.25 |        2575.45 | No      |
+| 0743-HRVFF   | Female   |               0 | Yes       | Yes          |       51 | No             | No phone service | DSL               | No                  | No                  | Yes                 | Yes                 | Yes                 | Yes                 | One year       | Yes                | Electronic check          |            56.15 |        2898.95 | No      |
 
 ---
 ---
@@ -212,100 +212,12 @@ Outliers on different thresholds.
 ---
 ---
 ## **Correlation Analysis:**
-Highly correlated features. 0.7
+Highly correlated features, above 0.7
 
-|    | Feature1         | Feature2         |   Correlation |
-|---:|:-----------------|:-----------------|--------------:|
-|  0 | gender           | SeniorCitizen    |    nan        |
-|  1 | gender           | Partner          |    nan        |
-|  2 | gender           | Dependents       |    nan        |
-|  3 | gender           | tenure           |    nan        |
-|  4 | gender           | PhoneService     |    nan        |
-|  5 | gender           | PaperlessBilling |    nan        |
-|  6 | gender           | MonthlyCharges   |    nan        |
-|  7 | gender           | TotalCharges     |    nan        |
-|  8 | gender           | Churn            |    nan        |
-|  9 | SeniorCitizen    | gender           |    nan        |
-| 10 | SeniorCitizen    | Partner          |    nan        |
-| 11 | SeniorCitizen    | Dependents       |    nan        |
-| 12 | SeniorCitizen    | tenure           |    nan        |
-| 13 | SeniorCitizen    | PhoneService     |    nan        |
-| 14 | SeniorCitizen    | PaperlessBilling |    nan        |
-| 15 | SeniorCitizen    | MonthlyCharges   |    nan        |
-| 16 | SeniorCitizen    | TotalCharges     |    nan        |
-| 17 | SeniorCitizen    | Churn            |    nan        |
-| 18 | Partner          | gender           |    nan        |
-| 19 | Partner          | SeniorCitizen    |    nan        |
-| 20 | Partner          | Dependents       |    nan        |
-| 21 | Partner          | tenure           |    nan        |
-| 22 | Partner          | PhoneService     |    nan        |
-| 23 | Partner          | PaperlessBilling |    nan        |
-| 24 | Partner          | MonthlyCharges   |    nan        |
-| 25 | Partner          | TotalCharges     |    nan        |
-| 26 | Partner          | Churn            |    nan        |
-| 27 | Dependents       | gender           |    nan        |
-| 28 | Dependents       | SeniorCitizen    |    nan        |
-| 29 | Dependents       | Partner          |    nan        |
-| 30 | Dependents       | tenure           |    nan        |
-| 31 | Dependents       | PhoneService     |    nan        |
-| 32 | Dependents       | PaperlessBilling |    nan        |
-| 33 | Dependents       | MonthlyCharges   |    nan        |
-| 34 | Dependents       | TotalCharges     |    nan        |
-| 35 | Dependents       | Churn            |    nan        |
-| 36 | tenure           | gender           |    nan        |
-| 37 | tenure           | SeniorCitizen    |    nan        |
-| 38 | tenure           | Partner          |    nan        |
-| 39 | tenure           | Dependents       |    nan        |
-| 40 | tenure           | PhoneService     |    nan        |
-| 41 | tenure           | PaperlessBilling |    nan        |
-| 42 | tenure           | MonthlyCharges   |    nan        |
-| 43 | tenure           | TotalCharges     |      0.825464 |
-| 44 | tenure           | Churn            |    nan        |
-| 45 | PhoneService     | gender           |    nan        |
-| 46 | PhoneService     | SeniorCitizen    |    nan        |
-| 47 | PhoneService     | Partner          |    nan        |
-| 48 | PhoneService     | Dependents       |    nan        |
-| 49 | PhoneService     | tenure           |    nan        |
-| 50 | PhoneService     | PaperlessBilling |    nan        |
-| 51 | PhoneService     | MonthlyCharges   |    nan        |
-| 52 | PhoneService     | TotalCharges     |    nan        |
-| 53 | PhoneService     | Churn            |    nan        |
-| 54 | PaperlessBilling | gender           |    nan        |
-| 55 | PaperlessBilling | SeniorCitizen    |    nan        |
-| 56 | PaperlessBilling | Partner          |    nan        |
-| 57 | PaperlessBilling | Dependents       |    nan        |
-| 58 | PaperlessBilling | tenure           |    nan        |
-| 59 | PaperlessBilling | PhoneService     |    nan        |
-| 60 | PaperlessBilling | MonthlyCharges   |    nan        |
-| 61 | PaperlessBilling | TotalCharges     |    nan        |
-| 62 | PaperlessBilling | Churn            |    nan        |
-| 63 | MonthlyCharges   | gender           |    nan        |
-| 64 | MonthlyCharges   | SeniorCitizen    |    nan        |
-| 65 | MonthlyCharges   | Partner          |    nan        |
-| 66 | MonthlyCharges   | Dependents       |    nan        |
-| 67 | MonthlyCharges   | tenure           |    nan        |
-| 68 | MonthlyCharges   | PhoneService     |    nan        |
-| 69 | MonthlyCharges   | PaperlessBilling |    nan        |
-| 70 | MonthlyCharges   | TotalCharges     |    nan        |
-| 71 | MonthlyCharges   | Churn            |    nan        |
-| 72 | TotalCharges     | gender           |    nan        |
-| 73 | TotalCharges     | SeniorCitizen    |    nan        |
-| 74 | TotalCharges     | Partner          |    nan        |
-| 75 | TotalCharges     | Dependents       |    nan        |
-| 76 | TotalCharges     | tenure           |      0.825464 |
-| 77 | TotalCharges     | PhoneService     |    nan        |
-| 78 | TotalCharges     | PaperlessBilling |    nan        |
-| 79 | TotalCharges     | MonthlyCharges   |    nan        |
-| 80 | TotalCharges     | Churn            |    nan        |
-| 81 | Churn            | gender           |    nan        |
-| 82 | Churn            | SeniorCitizen    |    nan        |
-| 83 | Churn            | Partner          |    nan        |
-| 84 | Churn            | Dependents       |    nan        |
-| 85 | Churn            | tenure           |    nan        |
-| 86 | Churn            | PhoneService     |    nan        |
-| 87 | Churn            | PaperlessBilling |    nan        |
-| 88 | Churn            | MonthlyCharges   |    nan        |
-| 89 | Churn            | TotalCharges     |    nan        |
+|    | Feature1     | Feature2     |   Correlation |
+|---:|:-------------|:-------------|--------------:|
+|  0 | tenure       | TotalCharges |      0.825464 |
+|  1 | TotalCharges | tenure       |      0.825464 |
 
 ![Correlation](images/correlations.svg)
 
